@@ -2,6 +2,8 @@ import fastify from 'fastify';
 import { MikroORM } from '@mikro-orm/core';
 import mikroOrmConfig from './mikro-orm.config';
 import accommodationRoutes from './routes/accommodation.routes';
+import hotelRoutes from './routes/hotel.routes';
+import apartmentRoutes from './routes/apartment.routes';
 import bookingRoutes from './routes/booking.routes';
 import swagger from '@fastify/swagger';
 import swaggerUi from '@fastify/swagger-ui';
@@ -39,6 +41,8 @@ const start = async () => {
     server.decorate('em', orm.em.fork());
 
     server.register(accommodationRoutes, { prefix: '/accommodations' });
+    server.register(hotelRoutes, { prefix: '/hotels' });
+    server.register(apartmentRoutes, { prefix: '/apartments' });
     server.register(bookingRoutes, { prefix: '/bookings' });
 
     await server.listen({ 
