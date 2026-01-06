@@ -1,10 +1,24 @@
-import { Entity, Property, PrimaryKey, OneToMany, Collection } from '@mikro-orm/core';
+import { Entity, Property, PrimaryKey, OneToMany, Collection, Enum } from '@mikro-orm/core';
 import { Booking } from './booking.entity';
 
-@Entity()
-export class Accommodation {
+export enum AccommodationType {
+  HOTEL = 'hotel',
+  APARTMENT = 'apartment',
+}
+
+@Entity({
+  discriminatorColumn: 'type',
+  discriminatorMap: {
+    [AccommodationType.HOTEL]: 'Hotel',
+    [AccommodationType.APARTMENT]: 'Apartment',
+  },
+})
+export abstract class Accommodation {
   @PrimaryKey()
   id!: number;
+
+  @Enum(() => AccommodationType)
+  type!: AccommodationType;
 
   @Property()
   name!: string;
