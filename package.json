@@ -9,9 +9,9 @@
     "generate-migration": "ts-node ./node_modules/.bin/mikro-orm migration:create",
     "migration:down": "ts-node ./node_modules/.bin/mikro-orm migration:down",
     "migration:up": "ts-node ./node_modules/.bin/mikro-orm migration:up",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage"
+    "test": "jest --runInBand",
+    "test:watch": "jest --watch --runInBand",
+    "test:coverage": "jest --coverage --runInBand"
   },
   "dependencies": {
     "@fastify/swagger": "^8.12.0",
