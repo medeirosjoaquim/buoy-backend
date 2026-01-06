@@ -2,10 +2,7 @@ import { EntityManager } from '@mikro-orm/core';
 import { Apartment } from '../entities/apartment.entity';
 import { AccommodationType } from '../entities/accommodation.entity';
 import { ApartmentSchema, ApartmentInput } from '../schemas/apartment.schema';
-
-export type ServiceResult<T> =
-  | { success: true; data: T }
-  | { success: false; error: 'not_found' | 'validation_error'; message: string; details?: unknown };
+import { ServiceResult } from '../types/service.types';
 
 export class ApartmentService {
   constructor(private em: EntityManager) {}
