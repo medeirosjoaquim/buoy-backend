@@ -15,6 +15,19 @@
           "nullable": false,
           "mappedType": "integer"
         },
+        "type": {
+          "name": "type",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "enumItems": [
+            "hotel",
+            "apartment"
+          ],
+          "mappedType": "enum"
+        },
         "name": {
           "name": "name",
           "type": "varchar(255)",
@@ -52,11 +65,47 @@
           "primary": false,
           "nullable": false,
           "mappedType": "string"
+        },
+        "star_rating": {
+          "name": "star_rating",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "mappedType": "integer"
+        },
+        "number_of_rooms": {
+          "name": "number_of_rooms",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "mappedType": "integer"
+        },
+        "has_parking": {
+          "name": "has_parking",
+          "type": "boolean",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "mappedType": "boolean"
         }
       },
       "name": "accommodation",
       "schema": "public",
       "indexes": [
+        {
+          "columnNames": [
+            "type"
+          ],
+          "composite": false,
+          "keyName": "accommodation_type_index",
+          "primary": false,
+          "unique": false
+        },
         {
           "keyName": "accommodation_pkey",
           "columnNames": [
