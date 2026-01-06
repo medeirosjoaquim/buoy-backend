@@ -1,7 +1,6 @@
 import { FastifyPluginAsync } from 'fastify';
-import { Hotel } from '../entities/hotel.entity';
-import { AccommodationType } from '../entities/accommodation.entity';
 import { HotelSchema, HotelInput, HotelParamsSchema } from '../schemas/hotel.schema';
+import { HotelService } from '../services/hotel.service';
 import { toJsonSchema } from '../utils/schema';
 
 const hotelRoutes: FastifyPluginAsync = async (fastify) => {
@@ -11,7 +10,8 @@ const hotelRoutes: FastifyPluginAsync = async (fastify) => {
       tags: ['Hotels'],
     },
   }, async () => {
-    return await fastify.em.find(Hotel, {});
+    const service = new HotelService(fastify.em);
+    return service.findAll();
   });
 
   fastify.get('/:id', {
@@ -22,13 +22,14 @@ const hotelRoutes: FastifyPluginAsync = async (fastify) => {
     },
   }, async (request, reply) => {
     const { id } = HotelParamsSchema.parse(request.params);
-    const hotel = await fastify.em.findOne(Hotel, { id });
+    const service = new HotelService(fastify.em);
+    const result = await service.findById(id);
 
-    if (!hotel) {
-      return reply.status(404).send({ message: 'Hotel not found' });
+    if (!result.success) {
+      return reply.status(404).send({ message: result.message });
     }
 
-    return hotel;
+    return result.data;
   });
 
   fastify.post<{ Body: HotelInput }>('/', {
@@ -38,18 +39,14 @@ const hotelRoutes: FastifyPluginAsync = async (fastify) => {
       body: toJsonSchema(HotelSchema),
     },
   }, async (request, reply) => {
-    const validationResult = HotelSchema.safeParse(request.body);
+    const service = new HotelService(fastify.em);
+    const result = await service.create(request.body);
 
-    if (!validationResult.success) {
-      return reply.status(400).send({ errors: validationResult.error.errors });
+    if (!result.success) {
+      return reply.status(400).send({ errors: result.details });
     }
 
-    const hotel = fastify.em.create(Hotel, {
-      ...validationResult.data,
-      type: AccommodationType.HOTEL,
-    });
-    await fastify.em.persistAndFlush(hotel);
-    return reply.status(201).send(hotel);
+    return reply.status(201).send(result.data);
   });
 
   fastify.put<{ Body: HotelInput }>('/:id', {
@@ -61,21 +58,17 @@ const hotelRoutes: FastifyPluginAsync = async (fastify) => {
     },
   }, async (request, reply) => {
     const { id } = HotelParamsSchema.parse(request.params);
-    const hotel = await fastify.em.findOne(Hotel, { id });
+    const service = new HotelService(fastify.em);
+    const result = await service.update(id, request.body);
 
-    if (!hotel) {
-      return reply.status(404).send({ message: 'Hotel not found' });
+    if (!result.success) {
+      if (result.error === 'not_found') {
+        return reply.status(404).send({ message: result.message });
+      }
+      return reply.status(400).send({ errors: result.details });
     }
 
-    const validationResult = HotelSchema.safeParse(request.body);
-
-    if (!validationResult.success) {
-      return reply.status(400).send({ errors: validationResult.error.errors });
-    }
-
-    fastify.em.assign(hotel, validationResult.data);
-    await fastify.em.flush();
-    return hotel;
+    return result.data;
   });
 
   fastify.delete('/:id', {
@@ -86,13 +79,13 @@ const hotelRoutes: FastifyPluginAsync = async (fastify) => {
     },
   }, async (request, reply) => {
     const { id } = HotelParamsSchema.parse(request.params);
-    const hotel = await fastify.em.findOne(Hotel, { id });
+    const service = new HotelService(fastify.em);
+    const result = await service.delete(id);
 
-    if (!hotel) {
-      return reply.status(404).send({ message: 'Hotel not found' });
+    if (!result.success) {
+      return reply.status(404).send({ message: result.message });
     }
 
-    await fastify.em.removeAndFlush(hotel);
     return reply.status(204).send();
   });
 };

@@ -1,7 +1,6 @@
 import { FastifyPluginAsync } from 'fastify';
-import { Apartment } from '../entities/apartment.entity';
-import { AccommodationType } from '../entities/accommodation.entity';
 import { ApartmentSchema, ApartmentInput, ApartmentParamsSchema } from '../schemas/apartment.schema';
+import { ApartmentService } from '../services/apartment.service';
 import { toJsonSchema } from '../utils/schema';
 
 const apartmentRoutes: FastifyPluginAsync = async (fastify) => {
@@ -11,7 +10,8 @@ const apartmentRoutes: FastifyPluginAsync = async (fastify) => {
       tags: ['Apartments'],
     },
   }, async () => {
-    return await fastify.em.find(Apartment, {});
+    const service = new ApartmentService(fastify.em);
+    return service.findAll();
   });
 
   fastify.get('/:id', {
@@ -22,13 +22,14 @@ const apartmentRoutes: FastifyPluginAsync = async (fastify) => {
     },
   }, async (request, reply) => {
     const { id } = ApartmentParamsSchema.parse(request.params);
-    const apartment = await fastify.em.findOne(Apartment, { id });
+    const service = new ApartmentService(fastify.em);
+    const result = await service.findById(id);
 
-    if (!apartment) {
-      return reply.status(404).send({ message: 'Apartment not found' });
+    if (!result.success) {
+      return reply.status(404).send({ message: result.message });
     }
 
-    return apartment;
+    return result.data;
   });
 
   fastify.post<{ Body: ApartmentInput }>('/', {
@@ -38,18 +39,14 @@ const apartmentRoutes: FastifyPluginAsync = async (fastify) => {
       body: toJsonSchema(ApartmentSchema),
     },
   }, async (request, reply) => {
-    const validationResult = ApartmentSchema.safeParse(request.body);
+    const service = new ApartmentService(fastify.em);
+    const result = await service.create(request.body);
 
-    if (!validationResult.success) {
-      return reply.status(400).send({ errors: validationResult.error.errors });
+    if (!result.success) {
+      return reply.status(400).send({ errors: result.details });
     }
 
-    const apartment = fastify.em.create(Apartment, {
-      ...validationResult.data,
-      type: AccommodationType.APARTMENT,
-    });
-    await fastify.em.persistAndFlush(apartment);
-    return reply.status(201).send(apartment);
+    return reply.status(201).send(result.data);
   });
 
   fastify.put<{ Body: ApartmentInput }>('/:id', {
@@ -61,21 +58,17 @@ const apartmentRoutes: FastifyPluginAsync = async (fastify) => {
     },
   }, async (request, reply) => {
     const { id } = ApartmentParamsSchema.parse(request.params);
-    const apartment = await fastify.em.findOne(Apartment, { id });
+    const service = new ApartmentService(fastify.em);
+    const result = await service.update(id, request.body);
 
-    if (!apartment) {
-      return reply.status(404).send({ message: 'Apartment not found' });
+    if (!result.success) {
+      if (result.error === 'not_found') {
+        return reply.status(404).send({ message: result.message });
+      }
+      return reply.status(400).send({ errors: result.details });
     }
 
-    const validationResult = ApartmentSchema.safeParse(request.body);
-
-    if (!validationResult.success) {
-      return reply.status(400).send({ errors: validationResult.error.errors });
-    }
-
-    fastify.em.assign(apartment, validationResult.data);
-    await fastify.em.flush();
-    return apartment;
+    return result.data;
   });
 
   fastify.delete('/:id', {
@@ -86,13 +79,13 @@ const apartmentRoutes: FastifyPluginAsync = async (fastify) => {
     },
   }, async (request, reply) => {
     const { id } = ApartmentParamsSchema.parse(request.params);
-    const apartment = await fastify.em.findOne(Apartment, { id });
+    const service = new ApartmentService(fastify.em);
+    const result = await service.delete(id);
 
-    if (!apartment) {
-      return reply.status(404).send({ message: 'Apartment not found' });
+    if (!result.success) {
+      return reply.status(404).send({ message: result.message });
     }
 
-    await fastify.em.removeAndFlush(apartment);
     return reply.status(204).send();
   });
 };
