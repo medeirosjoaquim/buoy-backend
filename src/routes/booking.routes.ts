@@ -35,7 +35,28 @@ const bookingRoutes: FastifyPluginAsync = async (fastify) => {
     schema: {
       description: 'Create a new booking',
       tags: ['Bookings'],
-      body: BookingJsonSchema
+      body: BookingJsonSchema,
+      response: {
+        201: {
+          description: 'Booking created successfully',
+          type: 'object',
+        },
+        400: {
+          description: 'Validation error or accommodation not found',
+          type: 'object',
+          properties: {
+            message: { type: 'string' },
+            errors: { type: 'array' },
+          },
+        },
+        409: {
+          description: 'Booking conflict - overlap (apartment) or fully booked (hotel)',
+          type: 'object',
+          properties: {
+            message: { type: 'string' },
+          },
+        },
+      },
     }
   }, async (request, reply) => {
     const parseResult = BookingSchema.safeParse(request.body);
