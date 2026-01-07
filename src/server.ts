@@ -5,6 +5,7 @@ import accommodationRoutes from './routes/accommodation.routes';
 import hotelRoutes from './routes/hotel.routes';
 import apartmentRoutes from './routes/apartment.routes';
 import bookingRoutes from './routes/booking.routes';
+import availabilityRoutes from './routes/availability.routes';
 import swagger from '@fastify/swagger';
 import swaggerUi from '@fastify/swagger-ui';
 
@@ -41,6 +42,7 @@ const start = async () => {
     server.decorate('em', orm.em.fork());
 
     server.register(accommodationRoutes, { prefix: '/accommodations' });
+    server.register(availabilityRoutes, { prefix: '/accommodations' });
     server.register(hotelRoutes, { prefix: '/hotels' });
     server.register(apartmentRoutes, { prefix: '/apartments' });
     server.register(bookingRoutes, { prefix: '/bookings' });
