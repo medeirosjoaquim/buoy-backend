@@ -1,13 +1,15 @@
 import { FastifyPluginAsync } from 'fastify';
 import { Accommodation } from '../entities/accommodation.entity';
-import { AccommodationSchema, AccommodationInput, AccommodationParamsSchema } from '../schemas/accommodation.schema';
-import fromZodSchema from 'zod-to-json-schema';
+import { AccommodationParamsSchema } from '../schemas/accommodation.schema';
+import { toJsonSchema } from '../utils/schema';
 
+// Note: POST/PUT/DELETE removed - use /hotels or /apartments endpoints instead.
+// Accommodation is an abstract base class with Single Table Inheritance (STI).
 
 const accommodationRoutes: FastifyPluginAsync = async (fastify) => {
   fastify.get('/', {
     schema: {
-      description: 'Get all accommodations',
+      description: 'Get all accommodations (hotels and apartments)',
       tags: ['Accommodations']
     }
   }, async () => {
@@ -18,34 +20,17 @@ const accommodationRoutes: FastifyPluginAsync = async (fastify) => {
     schema: {
       description: 'Get accommodation by ID',
       tags: ['Accommodations'],
-      params: fromZodSchema(AccommodationParamsSchema)
+      params: toJsonSchema(AccommodationParamsSchema)
     }
   }, async (request, reply) => {
     const { id } = AccommodationParamsSchema.parse(request.params);
     const accommodation = await fastify.em.findOne(Accommodation, { id });
-    
+
     if (!accommodation) {
       return reply.status(404).send({ message: 'Accommodation not found' });
     }
-    
-    return accommodation;
-  });
 
-  fastify.post<{ Body: AccommodationInput }>('/', {
-    schema: {
-      description: 'Create a new accommodation',
-      tags: ['Accommodations'],
-      body: fromZodSchema(AccommodationSchema)
-    }
-  }, async (request, reply) => {
-    try {
-      const data = AccommodationSchema.parse(request.body);
-      const accommodation = fastify.em.create(Accommodation, data);
-      await fastify.em.persistAndFlush(accommodation);
-      return reply.status(201).send(accommodation);
-    } catch (error) {
-      return reply.status(400).send(error);
-    }
+    return accommodation;
   });
 };
 

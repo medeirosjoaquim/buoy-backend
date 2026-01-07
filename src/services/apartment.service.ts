@@ -22,7 +22,7 @@ export class ApartmentService {
   async create(input: ApartmentInput): Promise<ServiceResult<Apartment>> {
     const validation = ApartmentSchema.safeParse(input);
     if (!validation.success) {
-      return { success: false, error: 'validation_error', message: 'Validation failed', details: validation.error.errors };
+      return { success: false, error: 'validation_error', message: 'Validation failed', details: validation.error.issues };
     }
 
     const apartment = this.em.create(Apartment, {
@@ -41,7 +41,7 @@ export class ApartmentService {
 
     const validation = ApartmentSchema.safeParse(input);
     if (!validation.success) {
-      return { success: false, error: 'validation_error', message: 'Validation failed', details: validation.error.errors };
+      return { success: false, error: 'validation_error', message: 'Validation failed', details: validation.error.issues };
     }
 
     this.em.assign(apartment, validation.data);

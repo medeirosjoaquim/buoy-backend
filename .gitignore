@@ -36,9 +36,6 @@ temp/
 tmp/
 *.tmp
 
-# Lock files (if preferred)
-package-lock.json
-
 # Docker
 docker-compose.override.yml
 

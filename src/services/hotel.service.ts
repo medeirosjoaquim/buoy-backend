@@ -22,7 +22,7 @@ export class HotelService {
   async create(input: HotelInput): Promise<ServiceResult<Hotel>> {
     const validation = HotelSchema.safeParse(input);
     if (!validation.success) {
-      return { success: false, error: 'validation_error', message: 'Validation failed', details: validation.error.errors };
+      return { success: false, error: 'validation_error', message: 'Validation failed', details: validation.error.issues };
     }
 
     const hotel = this.em.create(Hotel, {
@@ -41,7 +41,7 @@ export class HotelService {
 
     const validation = HotelSchema.safeParse(input);
     if (!validation.success) {
-      return { success: false, error: 'validation_error', message: 'Validation failed', details: validation.error.errors };
+      return { success: false, error: 'validation_error', message: 'Validation failed', details: validation.error.issues };
     }
 
     this.em.assign(hotel, validation.data);

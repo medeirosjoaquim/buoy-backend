@@ -2,7 +2,7 @@ import { FastifyPluginAsync } from 'fastify';
 import { Booking } from '../entities/booking.entity';
 import { Accommodation } from '../entities/accommodation.entity';
 import { BookingInput, BookingSchema, BookingJsonSchema, BookingParamsSchema } from '../schemas/booking.schema';
-import fromZodSchema from 'zod-to-json-schema';
+import { toJsonSchema } from '../utils/schema';
 
 const bookingRoutes: FastifyPluginAsync = async (fastify) => {
   fastify.get('/', {
@@ -18,7 +18,7 @@ const bookingRoutes: FastifyPluginAsync = async (fastify) => {
     schema: {
       description: 'Get booking by ID',
       tags: ['Bookings'],
-      params: fromZodSchema(BookingParamsSchema)
+      params: toJsonSchema(BookingParamsSchema)
     }
   }, async (request, reply) => {
     const { id } = BookingParamsSchema.parse(request.params);
