@@ -27,6 +27,7 @@ export class HotelService {
 
     const hotel = this.em.create(Hotel, {
       ...validation.data,
+      roomCount: validation.data.roomCount ?? 1,
       type: AccommodationType.HOTEL,
     });
     await this.em.persistAndFlush(hotel);

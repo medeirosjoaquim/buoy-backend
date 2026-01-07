@@ -76,7 +76,7 @@ describe('HotelService', () => {
 
     it('should create and persist hotel on valid input', async () => {
       const validInput = { name: 'Grand Hotel', price: 150, location: 'New York' };
-      const createdHotel = { id: 1, ...validInput, type: AccommodationType.HOTEL } as Hotel;
+      const createdHotel = { id: 1, ...validInput, type: AccommodationType.HOTEL, roomCount: 1 } as Hotel;
       mockEm.create.mockReturnValue(createdHotel);
       mockEm.persistAndFlush.mockResolvedValue(undefined);
 
@@ -84,6 +84,7 @@ describe('HotelService', () => {
 
       expect(mockEm.create).toHaveBeenCalledWith(Hotel, {
         ...validInput,
+        roomCount: 1,
         type: AccommodationType.HOTEL,
       });
       expect(mockEm.persistAndFlush).toHaveBeenCalledWith(createdHotel);

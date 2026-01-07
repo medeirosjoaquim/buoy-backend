@@ -7,4 +7,7 @@ export class Hotel extends Accommodation {
 
   @Property({ nullable: true })
   starRating?: number;
+
+  @Property({ nullable: true, default: 1 })
+  roomCount: number = 1;
 }
