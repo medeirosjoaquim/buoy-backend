@@ -13,6 +13,13 @@ const AvailabilityQuerySchema = z.object({
   }),
 });
 
+const AvailabilityResponseSchema = z.object({
+  accommodationId: z.number(),
+  requestedDate: z.string(),
+  nextAvailableDate: z.string(),
+  isRequestedDateAvailable: z.boolean(),
+});
+
 const availabilityRoutes: FastifyPluginAsync = async (fastify) => {
   fastify.get<{
     Params: { id: string };
@@ -23,6 +30,9 @@ const availabilityRoutes: FastifyPluginAsync = async (fastify) => {
       tags: ['Availability'],
       params: toJsonSchema(AvailabilityParamsSchema),
       querystring: toJsonSchema(AvailabilityQuerySchema),
+      response: {
+        200: toJsonSchema(AvailabilityResponseSchema),
+      },
     },
   }, async (request, reply) => {
     const paramsResult = AvailabilityParamsSchema.safeParse(request.params);
