@@ -48,7 +48,37 @@ The frontend needs to, given an accommodation's `id` and a `date`, retrieve the 
 ### Question
 
 - How would you solve this problem?
+A:
+
+1. Differentiate by accommodation type - Apartments have capacity of 1, hotels have configurable roomCount
+2. For a given date, count overlapping bookings - A booking overlaps if startDate <= date < endDate
+3. Find next available date:
+   - If overlappingCount < capacity → requested date is available
+   - Otherwise, find the earliest endDate among overlapping bookings and check that date
+   - Repeat until we find a date where overlappingCount < capacity
+ 4. Edge case handling:
+   - Adjacent bookings (checkout = checkin) are NOT overlapping
+   - Limit search to 365 days to prevent infinite loops
+   - Handle consecutive bookings by chaining through end dates
+
 - What data or API would you provide to the frontend?
+A:
+Endpoint:
+  GET /accommodations/:id/availability?date=2024-01-15
+
+  Response:
+  {
+    "accommodationId": 1,
+    "requestedDate": "2024-01-15",
+    "nextAvailableDate": "2024-01-20",
+    "isRequestedDateAvailable": false
+  }
+
+  Structure:
+  - isRequestedDateAvailable - allows frontend to immediately show "Available!" or "Not available"
+  - nextAvailableDate - enables "Next available: Jan 20" messaging
+  - requestedDate echoed back - helps frontend confirm the query without tracking state
+  - Single endpoint works for both hotels and apartments - frontend doesn't need to know capacity logic
 
 ## TECH CONTEXT
 ### Stack
