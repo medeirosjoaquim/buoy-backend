@@ -126,3 +126,6 @@ Migrations will be needed when an existing entity changes any of it's Properties
 1. Stop every running container: `docker compose down`
 2. In one terminal, run the postgres container `docker compose up postgres`
 3. In another terminal, run the following command: `docker-compose run --rm app npm run migration:down`
+
+Notes: 
+> There was a issue with zod-to-json-schema where it created a recursive type (type that has child prop that has itself as child prop) it was decreasing performance ans slowing build. I upgraded zod version which can generarate json schema out of the box ans solves the issue. The build time went from 1m30.5s down to 2.795s
