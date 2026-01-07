@@ -39,6 +39,8 @@ export async function createTestServer(): Promise<TestContext> {
 }
 
 export async function cleanupTestServer(context: TestContext): Promise<void> {
+  // Clean up test data before closing
+  await clearDatabase(context.em);
   await context.server.close();
   await context.orm.close();
 }
