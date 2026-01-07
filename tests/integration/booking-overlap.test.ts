@@ -24,7 +24,7 @@ describe('Booking Overlap Rules', () => {
 
   describe('Hotels - Allow Overlapping Bookings', () => {
     it('should allow overlapping bookings for hotels', async () => {
-      // Create a hotel
+      // Create a hotel with multiple rooms
       const hotelResponse = await context.server.inject({
         method: 'POST',
         url: '/hotels',
@@ -33,6 +33,7 @@ describe('Booking Overlap Rules', () => {
           price: 150,
           location: 'New York',
           starRating: 4,
+          roomCount: 10,
         },
       });
       const hotel = JSON.parse(hotelResponse.body);
@@ -73,6 +74,7 @@ describe('Booking Overlap Rules', () => {
           price: 200,
           location: 'Miami',
           starRating: 5,
+          roomCount: 10,
         },
       });
       const hotel = JSON.parse(hotelResponse.body);

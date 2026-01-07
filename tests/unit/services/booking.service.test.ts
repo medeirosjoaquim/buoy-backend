@@ -9,13 +9,14 @@ describe('BookingService', () => {
   let service: BookingService;
   let mockEm: jest.Mocked<EntityManager>;
 
-  const createMockHotel = (id: number): Hotel => {
+  const createMockHotel = (id: number, roomCount: number = 10): Hotel => {
     const hotel = new Hotel();
     hotel.id = id;
     hotel.type = AccommodationType.HOTEL;
     hotel.name = 'Test Hotel';
     hotel.price = 100;
     hotel.location = 'Test Location';
+    hotel.roomCount = roomCount;
     return hotel;
   };
 
@@ -58,12 +59,12 @@ describe('BookingService', () => {
     };
 
     describe('for hotels', () => {
-      it('should create booking even when dates overlap with existing booking', async () => {
-        const hotel = createMockHotel(1);
+      it('should create booking when rooms are available', async () => {
+        const hotel = createMockHotel(1, 10); // 10 rooms
         const existingBooking = createMockBooking(1, '2024-01-10', '2024-01-18');
 
         mockEm.findOne.mockResolvedValueOnce(hotel); // Find accommodation
-        mockEm.find.mockResolvedValueOnce([existingBooking]); // Find overlapping bookings
+        mockEm.find.mockResolvedValueOnce([existingBooking]); // 1 overlapping booking
         const createdBooking = { id: 2, ...validInput, accommodation: hotel } as unknown as Booking;
         mockEm.create.mockReturnValue(createdBooking);
         mockEm.persistAndFlush.mockResolvedValue(undefined);
@@ -74,21 +75,44 @@ describe('BookingService', () => {
         if (result.success) {
           expect(result.data).toEqual(createdBooking);
         }
-        // Hotels should NOT check for overlaps
-        expect(mockEm.find).not.toHaveBeenCalled();
       });
 
-      it('should allow multiple overlapping bookings for hotel', async () => {
-        const hotel = createMockHotel(1);
+      it('should allow multiple overlapping bookings when rooms available', async () => {
+        const hotel = createMockHotel(1, 5); // 5 rooms
+        const existingBookings = [
+          createMockBooking(1, '2024-01-10', '2024-01-18'),
+          createMockBooking(2, '2024-01-12', '2024-01-17'),
+        ]; // 2 overlapping bookings, 3 rooms still available
 
         mockEm.findOne.mockResolvedValueOnce(hotel);
-        const createdBooking = { id: 1, ...validInput, accommodation: hotel } as unknown as Booking;
+        mockEm.find.mockResolvedValueOnce(existingBookings);
+        const createdBooking = { id: 3, ...validInput, accommodation: hotel } as unknown as Booking;
         mockEm.create.mockReturnValue(createdBooking);
         mockEm.persistAndFlush.mockResolvedValue(undefined);
 
         const result = await service.create(validInput);
 
         expect(result.success).toBe(true);
+      });
+
+      it('should reject booking when hotel is fully booked', async () => {
+        const hotel = createMockHotel(1, 2); // 2 rooms
+        const existingBookings = [
+          createMockBooking(1, '2024-01-10', '2024-01-18'),
+          createMockBooking(2, '2024-01-12', '2024-01-17'),
+        ]; // 2 overlapping bookings, no rooms available
+
+        mockEm.findOne.mockResolvedValueOnce(hotel);
+        mockEm.find.mockResolvedValueOnce(existingBookings);
+
+        const result = await service.create(validInput);
+
+        expect(result.success).toBe(false);
+        if (!result.success) {
+          expect(result.error).toBe('fully_booked');
+          expect(result.message).toContain('fully booked');
+        }
+        expect(mockEm.create).not.toHaveBeenCalled();
       });
     });
 

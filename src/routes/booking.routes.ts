@@ -51,7 +51,7 @@ const bookingRoutes: FastifyPluginAsync = async (fastify) => {
       if (result.error === 'not_found') {
         return reply.status(400).send({ message: result.message });
       }
-      if (result.error === 'overlap') {
+      if (result.error === 'overlap' || result.error === 'fully_booked') {
         return reply.status(409).send({ message: result.message });
       }
       return reply.status(400).send({ message: result.message });
