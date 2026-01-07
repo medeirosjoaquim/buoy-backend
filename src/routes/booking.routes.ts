@@ -40,6 +40,7 @@ const bookingRoutes: FastifyPluginAsync = async (fastify) => {
         201: {
           description: 'Booking created successfully',
           type: 'object',
+          additionalProperties: true,
         },
         400: {
           description: 'Validation error or accommodation not found',
